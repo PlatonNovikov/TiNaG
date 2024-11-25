@@ -24,75 +24,87 @@ void fillPath(int** MAP_RIVER, int start_x, int start_y, int end_x, int end_y) {
     MAP_RIVER[y][x] = 1;  // Отмечаем конечную точку
 }
 
+void begin_river(Coordinate *rand_start, int width, int height) {
+    int begin_side = rand() % 4; // 0 - up, 1 - left, 2 - down, 3 - right
+
+    switch (begin_side) {
+        case 0:
+            rand_start->x = rand() % width;
+            rand_start->y = 0;
+            break;
+        
+        case 1:
+            rand_start->x = 0;
+            rand_start->y = rand() % height;
+            break;
+
+        case 2:
+            rand_start->x = rand() % width;
+            rand_start->y = height - 1;
+            break;
+
+        case 3:
+            rand_start->x = width - 1;
+            rand_start->y = rand() % height;
+            break;
+
+        default:
+            break;
+    }
+
+}
+
 void GENERATOR_RIVER(int** MAP_RIVER, int width, int height) {
     Coordinate rand_start;
 
-    int begin_side = rand() % 4; //1 - up, 2 - left, 3 - down, 4 - right
+    begin_river(&rand_start, width, height);
 
-    switch (begin_side){
-    case 0:
-        rand_start.x = rand() % width;
-        rand_start.y = 0;
-        break;
-    
-    case 1:
-        rand_start.x = 0;
-        rand_start.y = rand() % height;
-        break;
+    //printf("%d",ceil(log2(height * width)));
 
-    case 2:
-        rand_start.x = rand() % width;
-        rand_start.y = height;
-        break;
-
-    case 3:
-        rand_start.x = width;
-        rand_start.y = rand() % height;
-        break;
-
-    default:
-        break;
-    }
-    int cont_riv_count = 0;
-    for (int i = 0; i < ceil(log2(height * width)) + 1; i++){
+    int river_count = 1;
+    for (int i = 0; i < ceil(log2(height * width)) + 1; i++) {
         Coordinate cont_riv_end[4];
-        cont_riv_count = 0;
+        int cont_riv_count = 0;
 
-        if (rand_start.x > 0 && MAP_RIVER[rand_start.y][rand_start.x - 1] == 0){
-                cont_riv_end[cont_riv_count].x = rand_start.x - rand() % rand_start.x;
-                cont_riv_end[cont_riv_count].y = rand_start.y;
-                cont_riv_count++;
+        if (rand_start.x > 0 && MAP_RIVER[rand_start.y][rand_start.x - 1] == 0) {
+            cont_riv_end[cont_riv_count].x = rand_start.x - rand() % rand_start.x;
+            cont_riv_end[cont_riv_count].y = rand_start.y;
+            cont_riv_count++;
+        }
 
-            }
+        if (rand_start.x < width - 1 && MAP_RIVER[rand_start.y][rand_start.x + 1] == 0) {
+            cont_riv_end[cont_riv_count].x = rand_start.x + rand() % (width - rand_start.x);
+            cont_riv_end[cont_riv_count].y = rand_start.y;
+            cont_riv_count++;
+        }
 
-        if (rand_start.x < width - 1 && MAP_RIVER[rand_start.y][rand_start.x + 1] == 0){
-                cont_riv_end[cont_riv_count].x = rand_start.x + rand() % (width - rand_start.x);
-                cont_riv_end[cont_riv_count].y = rand_start.y;
-                cont_riv_count++;
-            }
+        if (rand_start.y > 0 && MAP_RIVER[rand_start.y - 1][rand_start.x] == 0) {
+            cont_riv_end[cont_riv_count].x = rand_start.x;
+            cont_riv_end[cont_riv_count].y = rand_start.y - rand() % rand_start.y;
+            cont_riv_count++;
+        }
 
-        if (rand_start.y > 0 && MAP_RIVER[rand_start.y - 1][rand_start.x] == 0){
-                cont_riv_end[cont_riv_count].x = rand_start.x;
-                cont_riv_end[cont_riv_count].y = rand_start.y - rand() % rand_start.y;
-                cont_riv_count++;
-            }
+        if (rand_start.y < height - 1 && MAP_RIVER[rand_start.y + 1][rand_start.x] == 0) {
+            cont_riv_end[cont_riv_count].x = rand_start.x;
+            cont_riv_end[cont_riv_count].y = rand_start.y + rand() % (height - rand_start.y);
+            cont_riv_count++;
+        }
 
-        if (rand_start.y < height - 1 && MAP_RIVER[rand_start.y + 1][rand_start.x] == 0){
-                cont_riv_end[cont_riv_count].x = rand_start.x;
-                cont_riv_end[cont_riv_count].y = rand_start.y + rand() % (height - rand_start.y);
-                cont_riv_count++;
-            }
-
-        if (cont_riv_count == 0){
+        if (cont_riv_count == 0) {
             continue;
-            }
+        }
 
         Coordinate rand_end = cont_riv_end[rand() % cont_riv_count];
-
-        printf("Start: %d %d\n", rand_start.x, rand_start.y);
+        //printf("Start: %d %d -> End: %d %d\n", rand_start.x, rand_start.y, rand_end.x, rand_end.y);
 
         fillPath(MAP_RIVER, rand_start.x, rand_start.y, rand_end.x, rand_end.y);
-
-        rand_start = rand_end;
+    
+        if ((rand() % river_count) == 0) {
+            rand_start = rand_end;
+            river_count++;
+        } else {
+            begin_river(&rand_start, width, height);
+            river_count = 1;
         }
-    }  
+    }
+}
