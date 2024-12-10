@@ -8,8 +8,10 @@ int WIDTH, HEIGHT;
 
 void GENERATOR(){
     int** MAP_RIVER = createMatrix(HEIGHT, WIDTH);
+    int** MAP_FOREST = createMatrix(HEIGHT, WIDTH);
     GENERATOR_RIVER(MAP_RIVER, WIDTH, HEIGHT);
-    printMatrix(MAP_RIVER, HEIGHT, WIDTH);
+    GENERATOR_FOREST(MAP_FOREST, MAP_RIVER, WIDTH, HEIGHT);
+    printMatrix(MAP_FOREST, HEIGHT, WIDTH);
 }
 
 void start(){

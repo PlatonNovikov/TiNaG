@@ -1,4 +1,6 @@
 #include <math.h>
+#include <vector>
+#include <utility>
 #include "random.hpp"
 
 typedef struct {
@@ -54,6 +56,18 @@ void begin_river(Coordinate *rand_start, int width, int height) {
 
 }
 
+void fillSquare(int** matrix, int width, int height, Coordinate center, int distance) {
+    // Проходим по всем ячейкам в квадрате
+    for (int y = center.y - distance; y <= center.y + distance; y++) {
+        for (int x = center.x - distance; x <= center.x + distance; x++) {
+            // Проверяем, что мы не выходим за пределы матрицы
+            if (x >= 0 && x < width && y >= 0 && y < height) {
+                matrix[y][x] = 1;  // Закрашиваем ячейку (например, присваиваем значение 1)
+            }
+        }
+    }
+}
+
 void GENERATOR_RIVER(int** MAP_RIVER, int width, int height) {
     Coordinate rand_start;
 
@@ -106,5 +120,43 @@ void GENERATOR_RIVER(int** MAP_RIVER, int width, int height) {
             begin_river(&rand_start, width, height);
             river_count = 1;
         }
+    }
+}
+
+void GENERATOR_FOREST(int** MAP_FOREST, int** MAP_RIVER, int width, int height) {
+    std::vector<Coordinate> coordinates;
+
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            bool isNearRiver = false;
+
+            // Проверяем все соседние ячейки (включая диагонали)
+            for (int dy = -1; dy <= 1; dy++) {
+                for (int dx = -1; dx <= 1; dx++) {
+                    int ny = y + dy;
+                    int nx = x + dx;
+
+                    // Проверяем, чтобы индексы не выходили за пределы карты
+                    if (ny >= 0 && ny < height && nx >= 0 && nx < width) {
+                        if (MAP_RIVER[ny][nx] == 1) {
+                            isNearRiver = true;
+                            break;
+                        }
+                    }
+                }
+                if (isNearRiver) break;
+            }
+
+            if (isNearRiver) {
+                coordinates.emplace_back(Coordinate{x, y});
+            }
+        }
+    }
+
+    for (int i = 0; i < log10(coordinates.size()); i++) {
+        int index = rand() % coordinates.size();
+        int size = rand() % static_cast<int>(ceil((log10(height * width) + 1)));
+
+        fillSquare(MAP_FOREST, width, height, coordinates[index], size);
     }
 }
